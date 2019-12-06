@@ -5,7 +5,7 @@ import Gen
 import NamedTupleTools: namedtuple
 
 struct SossTrace <: Gen.Trace
-  gen_fn 
+  gen_fn :: Gen.GenerativeFunction{NamedTuple,SossTrace}
   choices :: NamedTuple
   logprob 
   args
@@ -66,7 +66,7 @@ end
 
 function Gen.update(t::SossTrace, new_args::Tuple, argdiffs::Tuple, constraints::Gen.ChoiceMap)
     retdiff = ifelse(isempty(constraints), Gen.NoChange(), Gen.UnknownChange())
-    new_choices = merge(t.choices, namedtuple(Dict{Symbol, Any}(Gen.get_values_shallow(constraints))))
+    new_choices = merge(t.choices, namedtuple(Dict{Symbol}(Gen.get_values_shallow(constraints))))
     new_logprob = t.gen_fn.logpdf(new_args, new_choices)
     new_trace = SossTrace(t.gen_fn, new_choices, new_logprob, new_args)
     weight = new_logprob - t.logprob
