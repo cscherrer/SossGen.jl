@@ -5,19 +5,32 @@ import Gen
 import NamedTupleTools: namedtuple
 
 struct SossTrace <: Gen.Trace
-  gen_fn
-  choices
-  logprob
+  gen_fn 
+  choices :: NamedTuple
+  logprob 
   args
 end
 
+export SossGenerativeFunction
 struct SossGenerativeFunction <: Gen.GenerativeFunction{NamedTuple,SossTrace}
-  model
+    model  :: Model
+    logpdf :: Function
+end
+
+function SossGenerativeFunction(m::Model, ::typeof(codegen))
+    ℓ(args, data) = logpdf(m(args...), data, codegen)
+    SossGenerativeFunction(m, ℓ)
+end
+
+function SossGenerativeFunction(m::Model)
+    ℓ(args, data) = logpdf(m(args...), data)
+    SossGenerativeFunction(m, ℓ)
 end
 
 function Gen.simulate(gen_fn::SossGenerativeFunction, args::Tuple)
+
     choices = rand(gen_fn.model(args...))
-    score = logpdf(gen_fn.model(args...), choices)
+    score = gen_fn.logpdf(args, choices)
     SossTrace(gen_fn, choices, score, args)
 end
 
@@ -25,7 +38,8 @@ function Gen.generate(gen_fn::SossGenerativeFunction, args::Tuple, constraints::
   kvs = Gen.get_values_shallow(constraints)
   data = namedtuple(Dict{Symbol, Any}(kvs))
   weight, choices = weightedSample(gen_fn.model(args...), data)
-  logprob = logpdf(gen_fn.model(args...), choices)
+  @show args
+  logprob = gen_fn.logpdf(args, choices)
   SossTrace(gen_fn, choices, logprob, args), weight
 end
 
@@ -54,7 +68,7 @@ end
 function Gen.update(t::SossTrace, new_args::Tuple, argdiffs::Tuple, constraints::Gen.ChoiceMap)
     retdiff = ifelse(isempty(constraints), Gen.NoChange(), Gen.UnknownChange())
     new_choices = merge(t.choices, namedtuple(Dict{Symbol, Any}(Gen.get_values_shallow(constraints))))
-    new_logprob = logpdf(t.gen_fn.model(new_args...), new_choices)
+    new_logprob = t.gen_fn.logpdf(new_args, new_choices)
     new_trace = SossTrace(t.gen_fn, new_choices, new_logprob, new_args)
     weight = new_logprob - t.logprob
     discard = Gen.choicemap()
