@@ -51,5 +51,17 @@ function Gen.get_choices(t::SossTrace)
   c
 end
 
+function Gen.update(t::SossTrace, new_args::Tuple, argdiffs::Tuple, constraints::Gen.ChoiceMap)
+    retdiff = ifelse(isempty(constraints), Gen.NoChange(), Gen.UnknownChange())
+    new_choices = merge(t.choices, namedtuple(Dict{Symbol, Any}(Gen.get_values_shallow(constraints))))
+    new_logprob = logpdf(t.gen_fn.model(new_args...), new_choices)
+    new_trace = SossTrace(t.gen_fn, new_choices, new_logprob, new_args)
+    weight = new_logprob - t.logprob
+    discard = Gen.choicemap()
+    for (k, v) in Gen.get_values_shallow(constraints)
+      discard[k] = t.choices[k]
+    end
+    return (new_trace, weight, retdiff, discard)
+end
 
 end 
