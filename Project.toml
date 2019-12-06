@@ -3,6 +3,11 @@ uuid = "49da98a9-8e90-4571-9d91-650d79966921"
 authors = ["Chad Scherrer"]
 version = "0.1.0"
 
+[deps]
+Gen = "ea4f424c-a589-11e8-07c0-fd5c91b9da4a"
+NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
+Soss = "8ce77f84-9b61-11e8-39ff-d17a774bf41c"
+
 [compat]
 julia = "1.3"
 
