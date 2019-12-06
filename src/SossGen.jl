@@ -38,7 +38,6 @@ function Gen.generate(gen_fn::SossGenerativeFunction, args::Tuple, constraints::
   kvs = Gen.get_values_shallow(constraints)
   data = namedtuple(Dict{Symbol, Any}(kvs))
   weight, choices = weightedSample(gen_fn.model(args...), data)
-  @show args
   logprob = gen_fn.logpdf(args, choices)
   SossTrace(gen_fn, choices, logprob, args), weight
 end
