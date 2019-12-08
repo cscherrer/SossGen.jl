@@ -89,7 +89,7 @@ end
 
 function Gen.update(t::SossTrace{SossGenerativeFunction,NT}, new_args::Tuple, argdiffs::Tuple, constraints::Gen.ChoiceMap) where {NT}
     retdiff = ifelse(isempty(constraints), Gen.NoChange(), Gen.UnknownChange())
-    new_choices = merge(t.choices, namedtuple(Dict(Gen.get_values_shallow(constraints)))) :: NT
+    new_choices = NT(merge(t.choices, namedtuple(Dict{Symbol,Any}(Gen.get_values_shallow(constraints))))) # :: NT
     new_logprob = t.gen_fn.logpdf(new_args, new_choices) :: Float64
     new_trace = SossTrace{SossGenerativeFunction,NT}(t.gen_fn, new_choices, new_logprob, new_args)
     weight = new_logprob - t.logprob
