@@ -8,13 +8,9 @@ const logpdf = Soss.logpdf
 const ifelse = Base.ifelse
 
 import Gen
-import NamedTupleTools: namedtuple
 
-getN(nt::NamedTuple{N,T}) where {N,T} = N
-getN(::Type{NamedTuple{N,T}}) where {N,T} = N
+include("utils.jl")
 
-getT(nt::NamedTuple{N,T}) where {N,T} = T
-getT(::Type{NamedTuple{N,T}}) where {N,T} = tuple(T.types...)
 
 NTtypes(NT::Type{NamedTuple{N,T}}) where {N,T} = namedtuple(getN(NT),getT(NT))
 
@@ -25,13 +21,7 @@ struct SossTrace{F, NT} <: Gen.Trace
   args
 end
 
-function variables(m::Model{A,B,M}) where {A,B,M}
-    tuple(Soss.variables(m)...)
-end
-
-function variables(::Type{Model{A,B,M}}) where {A,B,M}
-    variables(Soss.type2model(Model{A,B,M}))
-end
+# Define a data type for your generative function
 
 export SossGenerativeFunction
 struct SossGenerativeFunction{M,F,V}  <: Gen.GenerativeFunction{V,SossTrace{SossGenerativeFunction}} 
