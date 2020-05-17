@@ -49,7 +49,7 @@ end
 function Gen.simulate(gen_fn::SossGenerativeFunction{M,F,V}, args::Tuple) where {M,F,V}
     choices = rand(gen_fn.model(args...))
     score = gen_fn.logpdf(args, choices)
-    SossTrace{SossGenerativeFunction,NT}(gen_fn, choices, score, args)
+    SossTrace{SossGenerativeFunction,typeof(choices)}(gen_fn, choices, score, args)
 end
 
 # has_argument_grads
